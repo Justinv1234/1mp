@@ -36,8 +36,13 @@ const CodeWindow = ({ code }) => {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="relative w-full max-w-2xl">
-        {/* Download button OUTSIDE the screenshot area */}
+      {/* Changes made here:
+        1. Changed 'w-full' to 'w-fit' so it shrinks to content
+        2. Added 'min-w-[300px]' so it doesn't get too small on short lines
+        3. Kept 'max-w-full' to prevent screen overflow
+      */}
+      <div className="relative w-fit max-w-full min-w-[300px]">
+        {/* Download button */}
         <button
           onClick={handleDownload}
           className="absolute -top-10 right-0 text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -48,11 +53,12 @@ const CodeWindow = ({ code }) => {
         </button>
 
         {/* Screenshot area */}
-        <div ref={ref} className="p-4 w-full bg-transparent">
+        <div ref={ref} className="p-4 bg-transparent">
           <div
             className="rounded-xl overflow-hidden shadow-2xl border border-gray-700/50"
             style={{ backgroundColor: "#0e1016" }}
           >
+            {/* Title bar */}
             <div className="px-4 py-3 flex items-center justify-between bg-white/5 border-b border-white/5">
               <div className="flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
@@ -61,8 +67,10 @@ const CodeWindow = ({ code }) => {
               </div>
             </div>
 
+            {/* Code Content */}
             <div className="p-4 overflow-x-auto bg-[#1e1e1e]">
               <div className="flex font-mono text-sm leading-6">
+                {/* Line Numbers */}
                 <div className="flex flex-col text-right pr-4 select-none text-gray-600 border-r border-gray-700/50 mr-4">
                   {lines.map((_, i) => (
                     <span key={i} className="h-6">
@@ -71,6 +79,7 @@ const CodeWindow = ({ code }) => {
                   ))}
                 </div>
 
+                {/* Actual Code */}
                 <div className="flex-1 whitespace-pre">
                   {highlightedTokens.map((token, i) => (
                     <span
