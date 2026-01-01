@@ -237,7 +237,7 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl p-8">
         <button
           onClick={() =>
@@ -274,7 +274,7 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
             <button
               onClick={generateScript}
               disabled={loadingScript}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+              className="w-full bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-4"
             >
               {loadingScript ? "Generating Script..." : "Generate TTS Script"}
             </button>
@@ -332,7 +332,7 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
                 <div className="flex justify-center">
                   <button
                     onClick={() => setShowAllTTS(!showAllTTS)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 shadow-lg"
+                    className="bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 shadow-lg"
                   >
                     {showAllTTS
                       ? "🔼 Hide Full TTS Script"
@@ -342,7 +342,7 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
 
                 {/* All TTS Display */}
                 {showAllTTS && (
-                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-6 border-2 border-indigo-200 shadow-lg">
+                  <div className="bg-linear-to-br from-indigo-50 to-purple-50 rounded-lg p-6 border-2 border-indigo-200 shadow-lg">
                     <h4 className="font-semibold text-indigo-900 mb-4 text-lg">
                       Complete TTS Script (Copy & Paste Ready)
                     </h4>

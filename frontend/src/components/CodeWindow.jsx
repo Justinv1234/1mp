@@ -36,12 +36,7 @@ const CodeWindow = ({ code }) => {
 
   return (
     <div className="flex flex-col items-center w-full">
-      {/* Changes made here:
-        1. Changed 'w-full' to 'w-fit' so it shrinks to content
-        2. Added 'min-w-[300px]' so it doesn't get too small on short lines
-        3. Kept 'max-w-full' to prevent screen overflow
-      */}
-      <div className="relative w-fit max-w-full min-w-[300px]">
+      <div className="relative w-fit max-w-full min-w-75">
         {/* Download button */}
         <button
           onClick={handleDownload}
