@@ -49,7 +49,7 @@ const CodeWindow = ({ code }) => {
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="relative w-fit max-w-full min-w-[300px]">
+      <div className="relative w-fit max-w-full min-w-75">
         <div ref={ref} className="bg-transparent">
           <div
             className="rounded-xl overflow-hidden shadow-2xl border border-white/10"

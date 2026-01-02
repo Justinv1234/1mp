@@ -177,8 +177,8 @@ Output **JSON only**, no extra text.`;
         </div>
 
         {/* Selected Idea Card */}
-        <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl mb-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500" />
+        <div className="bg-linear-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl mb-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-blue-500 to-purple-500" />
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
             Target Topic
           </h3>
@@ -201,7 +201,7 @@ Output **JSON only**, no extra text.`;
               <button
                 onClick={generateScript}
                 disabled={loadingScript}
-                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-500 hover:to-purple-500 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20"
+                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-500 hover:to-purple-500 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20"
               >
                 {loadingScript ? (
                   <>
