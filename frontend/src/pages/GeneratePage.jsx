@@ -1,6 +1,6 @@
 // src/pages/GeneratePage.jsx
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 
 export default function GeneratePage({ onNavigate, onSelectIdea }) {
   const [numIdeas, setNumIdeas] = useState(10);
@@ -31,27 +31,17 @@ For each video, output in the following JSON format EXACTLY:
 ]
 CAPTION STYLE RULES (VERY IMPORTANT):
 - Start with a shocking or curiosity hook
-  Examples:
-  - "Python just shut down my computer 😳💻"
-  - "This Python script feels illegal…"
-  - "Hackers use THIS Python trick 👀"
 - Use emojis naturally (😳 💻 🔐 🕵️‍♂️ 🚀 👀)
-- Use short punchy sentences or ellipses
-- Make it feel exclusive or urgent ("Save this", "Before it's gone")
+- Use short punchy sentences
+- Make it feel exclusive or urgent
 - Sound like hacker behavior
-- Include exactly **4 or 5 hashtags**
-- Hashtags should be relevant and commonly viral (e.g. #Python #Hacking #CyberSecurity #LearnPython #Coding #TechTricks)
-- DO NOT include ethical disclaimers like "Don't use this for evil" or "Use responsibly" in the caption
-CONTENT RULES:
-- Ideas must be programming-related
-- Beginner-friendly but impressive
-- Each idea must feel different
+- Include exactly 4 or 5 hashtags
+- DO NOT include ethical disclaimers
 OUTPUT RULES:
 - Output valid JSON only
 - No explanations
 - No markdown
-- No extra text
-Now generate ${numIdeas} video ideas following ALL rules above.`;
+Now generate ${numIdeas} video ideas.`;
 
     const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
@@ -78,7 +68,7 @@ Now generate ${numIdeas} video ideas following ALL rules above.`;
               {
                 role: "system",
                 content:
-                  "You are a helpful assistant that generates JSON output only. Never include markdown code blocks or explanations. Ensure all strings in JSON are properly escaped, especially code snippets with quotes and backslashes.",
+                  "You are a helpful assistant that generates JSON output only.",
               },
               {
                 role: "user",
@@ -92,109 +82,119 @@ Now generate ${numIdeas} video ideas following ALL rules above.`;
       );
 
       const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error.message);
-      }
+      if (data.error) throw new Error(data.error.message);
 
       const text = data.choices[0].message.content;
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
-
       setIdeas(parsed);
     } catch (err) {
       setError(`Failed to generate ideas: ${err.message}`);
-      console.error("API error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-[#0e1016] text-white flex flex-col items-center p-6 relative overflow-hidden">
+      {/* Ambient Background Effects (Purple/Blue Theme) */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] bg-purple-900/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[0%] left-[0%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative max-w-2xl w-full z-10 pt-10">
         <button
           onClick={() => onNavigate("home")}
-          className="mb-6 text-indigo-600 hover:text-indigo-800 font-medium transition duration-200"
+          className="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
         >
-          ← Back to Home
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Back to Home</span>
         </button>
 
-        <div className="text-center mb-8">
-          <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-600" />
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Generate Video Ideas
-          </h2>
-          <p className="text-gray-600">
-            AI-powered Python tutorial ideas for your TikTok
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">
-              Number of Ideas
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="15"
-              value={numIdeas}
-              onChange={(e) => setNumIdeas(e.target.value)}
-              className="w-full border-2 border-gray-300 rounded-xl p-4 focus:border-purple-500 focus:outline-none transition duration-200"
-              placeholder="Enter number of ideas"
-            />
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center p-3 bg-purple-500/10 rounded-2xl mb-4 border border-purple-500/20">
+              <Sparkles className="w-8 h-8 text-purple-400" />
+            </div>
+            <h2 className="text-3xl font-bold mb-2">Generate Video Ideas</h2>
+            <p className="text-gray-400">AI-powered Python tutorial concepts</p>
           </div>
 
-          <button
-            onClick={generateIdeas}
-            disabled={loading}
-            className="w-full bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading
-              ? "Generating..."
-              : `Generate ${numIdeas} ${numIdeas == 1 ? "Idea" : "Ideas"}`}
-          </button>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
-              {error}
+          <div className="space-y-6">
+            <div>
+              <label className="block text-gray-400 text-sm font-medium mb-3 ml-1">
+                Number of Ideas to Generate
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="15"
+                value={numIdeas}
+                onChange={(e) => setNumIdeas(e.target.value)}
+                className="w-full bg-[#0e1016] border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all placeholder-gray-600"
+                placeholder="10"
+              />
             </div>
-          )}
 
-          <div className="bg-gray-50 rounded-xl p-6 min-h-48">
-            {ideas.length === 0 && !loading && (
-              <p className="text-gray-400 text-center">
-                Generated ideas will appear here
-              </p>
-            )}
-            {loading && (
-              <p className="text-gray-600 text-center">
-                Generating your video ideas...
-              </p>
-            )}
-            {ideas.length > 0 && (
-              <div className="space-y-4">
-                {ideas.map((idea, index) => (
-                  <div
-                    key={index}
-                    onClick={() => {
-                      onSelectIdea(idea);
-                      onNavigate("idea-details");
-                    }}
-                    className="bg-white rounded-lg p-4 border border-gray-200 hover:border-purple-400 hover:shadow-md transition duration-200 cursor-pointer"
-                  >
-                    <h3 className="font-semibold text-gray-800 mb-2">
-                      {index + 1}. {idea.video_idea}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {idea.tiktok_caption}
-                    </p>
-                  </div>
-                ))}
+            <button
+              onClick={generateIdeas}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  <span>Generate {numIdeas} Ideas</span>
+                </>
+              )}
+            </button>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm">
+                {error}
               </div>
             )}
           </div>
+        </div>
+
+        {/* Results Area */}
+        <div className="mt-8 space-y-4 pb-20">
+          {ideas.length > 0 && (
+            <div className="text-sm text-gray-500 font-medium uppercase tracking-wider mb-4 ml-2">
+              Generated Results
+            </div>
+          )}
+
+          {ideas.map((idea, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                onSelectIdea(idea);
+                onNavigate("idea-details");
+              }}
+              className="group bg-white/5 hover:bg-white/10 border border-white/5 hover:border-purple-500/30 rounded-2xl p-5 cursor-pointer transition-all duration-200"
+            >
+              <div className="flex gap-4">
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-sm border border-purple-500/20">
+                  {index + 1}
+                </span>
+                <div>
+                  <h3 className="font-semibold text-gray-200 mb-2 group-hover:text-white transition-colors">
+                    {idea.video_idea}
+                  </h3>
+                  <p className="text-sm text-gray-500 group-hover:text-gray-400 line-clamp-2">
+                    {idea.tiktok_caption}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

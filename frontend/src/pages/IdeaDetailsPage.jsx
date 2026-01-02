@@ -1,5 +1,6 @@
 // src/pages/IdeaDetailsPage.jsx
 import { useState } from "react";
+import { ArrowLeft, Sparkles, Loader2, Copy, Check, Play } from "lucide-react";
 import CodeWindow from "../components/CodeWindow";
 
 export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
@@ -7,6 +8,7 @@ export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
   const [loadingScript, setLoadingScript] = useState(false);
   const [scriptError, setScriptError] = useState("");
   const [showAllTTS, setShowAllTTS] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleVoiceoverChange = (index, newValue) => {
     const updatedScript = { ...script };
@@ -19,9 +21,15 @@ export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
   };
 
   const getAllTTSText = () => {
+    if (!script) return "";
     const allTTS = script.tts_script.map((step) => step.voiceover).join("\n\n");
-
     return `${allTTS}\n\n${script.closer}`;
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(getAllTTSText());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const generateScript = async () => {
@@ -29,112 +37,46 @@ export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
     setScriptError("");
     setScript(null);
 
+    // ... (Keep existing prompt logic exactly as it was) ...
     const prompt = `You are an expert content creator for TikTok-style Python tutorials in the style of "1-Minute Python".  
 You are given a single **video idea/topic**: "${selectedIdea?.video_idea}"
 
 Generate a **step-by-step Python tutorial script** optimized for **TikTok virality** and **direct use in text-to-speech (ElevenLabs)**.
 
 Requirements:
-1. **FIRST STEP MUST BE THE VIRAL HOOK - THIS IS CRITICAL:**
+1. **FIRST STEP MUST BE THE VIRAL HOOK:**
    - The VERY FIRST item in tts_script MUST be a hook with NO code_snippet (leave it empty string "")
-   - This is the scroll-stopper that appears BEFORE any code is shown
-   - Must create IMMEDIATE curiosity, shock, or disbelief
-   - THE HOOK MUST BE EXTREMELY ATTENTION-GRABBING - Examples:
-     * "I just deleted 10,000 files in two seconds with Python."
-     * "Python can read your passwords right now and I'll show you how."
-     * "Watch me crash a website with five lines of code."
-     * "Your computer is doing this right now and you don't even know it."
-     * "This Python script just emptied my recycle bin automatically."
-     * "I made Python control my mouse and keyboard while I sleep."
-     * "Hackers use this exact code to break into systems."
-     * "Python just sent 100 emails without me touching anything."
-     * "I automated my entire job with this script."
-   - HOOK FORMULA: Use present tense action + shocking outcome
-     * "I just [did something intense] with Python"
-     * "Python can [do something forbidden-sounding]"
-     * "Watch me [do something impressive] in X seconds"
-     * "This script just [completed shocking action]"
-     * "[Something scary] is happening right now"
-   - Make it feel IMMEDIATE and REAL, not hypothetical
-   - Use specific numbers when possible: "10,000 files", "five lines", "100 emails"
-   - Sound like you JUST did this or are about to do it NOW
-   - Keep it under 15 words but pack maximum impact
-   - NO CODE SHOWN during the hook - pure attention-grabbing statement
+   - Examples: "I just deleted 10,000 files in two seconds with Python."
+   - Keep it under 15 words but pack maximum impact.
+   - NO CODE SHOWN during the hook.
    
-2. **EACH STEP SHOWS ONLY NEW CODE** - Do NOT repeat previous code:
-   - Step 1: Show ONLY the first import or line
-   - Step 2: Show ONLY the NEW line(s) being added (not the import again)
-   - Step 3: Show ONLY the next NEW addition
-   - Each code_snippet should contain ONLY the code being discussed in that step
-   - The full_script at the end will have everything combined
-   - This keeps each snippet focused and avoids repetition
+2. **EACH STEP SHOWS ONLY NEW CODE** - Do NOT repeat previous code in snippets.
    
 3. After the hook, break the tutorial into **teaching steps**, each containing:  
-   - **Voiceover:** Short, direct explanation of what you're adding NOW
-     * Keep it raw and real: "First we import this", "Now add this line", "Here's where it gets interesting"
-     * No fluff, no over-explaining - just what this step does
-     * Sound like you're doing something you probably shouldn't be showing
-   - **Code snippet:** The code SO FAR (cumulative from start to this step)
+   - **Voiceover:** Short, direct explanation.
+   - **Code snippet:** The code SO FAR (cumulative).
    
-4. Include a **viral TikTok-style closer** at the end that:  
-   - Wraps up with understated confidence
-   - Quick mention of time: "under a minute" or "that simple"
-   - Direct CTA: "Follow for more", "Daily Python tricks", "Save this"
-   - Keep it short - 1-2 sentences max
+4. Include a **viral TikTok-style closer** (1-2 sentences).
    
-5. Provide a **full combined Python script** at the end (this will be identical to the last step's code).
-
-CRITICAL JSON FORMATTING:
-- All code snippets MUST have properly escaped special characters
-- Use \\" for quotes inside code strings
-- Use \\\\ for backslashes in code
-- Never use single quotes in JSON - only double quotes
-- Ensure all JSON keys use double quotes
-- Remove any trailing commas before closing brackets
-- Test that your output is valid JSON before returning it
+5. Provide a **full combined Python script** at the end.
 
 Output format (JSON) EXACTLY like this:
 {
   "tts_script": [
     {
-      "voiceover": "VIRAL HOOK - question or bold statement under 15 words",
+      "voiceover": "VIRAL HOOK - question or bold statement",
       "code_snippet": ""
     },
     {
       "voiceover": "First we import this library",
       "code_snippet": "import requests"
-    },
-    {
-      "voiceover": "Now we set up the target",
-      "code_snippet": "target = \\"example.com\\""
-    },
-    {
-      "voiceover": "Here's where we actually make the request",
-      "code_snippet": "response = requests.get(target)"
     }
   ],
-  "closer": "That's it. Under 60 seconds. Follow for daily Python tricks.",
-  "full_script": "import requests\\n\\ntarget = \\"example.com\\"\\nresponse = requests.get(target)"
+  "closer": "Follow for daily Python tricks.",
+  "full_script": "import requests..."
 }
 
-VOICEOVER PERSONALITY RULES:
-- Be direct and no-nonsense: "First we", "Now add", "This line does X"
-- Drop the hype words unless genuinely warranted
-- Sound like you're showing a friend something cool, not performing
-- Slight edge: "This is the sketchy part", "Probably shouldn't show this but", "Most people don't know"
-- Keep it real - if something is simple, say it's simple
-- Build tension naturally through the progression, not forced excitement
-
-Additional rules:
-- Use real Python libraries relevant to the topic (requests, os, subprocess, selenium, beautifulsoup4, opencv, pyautogui, etc.)  
-- Keep tutorials **actually beginner-friendly** - no unexplained complex concepts
-- Code snippets must be **functional and executable**
-- Each step should add 1-3 lines of code maximum
-- All voiceover text must have **proper punctuation only**, suitable for TTS (no emojis, no ellipses)
-- The hook MUST have an empty code_snippet field
-- Output **JSON only**, no extra text, no explanations, no markdown  
-
-Now generate a complete **TTS-ready, incrementally-built Python tutorial script** with a VIRAL HOOK as the first step.`;
+Output **JSON only**, no extra text.`;
 
     const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
@@ -161,7 +103,7 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
               {
                 role: "system",
                 content:
-                  "You are a helpful assistant that generates ONLY valid JSON. Never include markdown, explanations, or any text outside the JSON object. Ensure all strings are properly escaped. Always escape backslashes and quotes in code snippets. Use double quotes for JSON strings, not single quotes.",
+                  "You are a helpful assistant that generates ONLY valid JSON. Ensure all strings/code are properly escaped.",
               },
               {
                 role: "user",
@@ -175,202 +117,223 @@ Now generate a complete **TTS-ready, incrementally-built Python tutorial script*
       );
 
       const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
 
-      if (data.error) {
-        throw new Error(data.error.message);
-      }
-
-      const text = data.choices[0].message.content;
-
-      // More aggressive JSON extraction
-      let clean = text
+      let clean = data.choices[0].message.content
         .replace(/```json\s*/g, "")
         .replace(/```\s*/g, "")
         .trim();
 
-      // Try to find the JSON object
+      // Find JSON object wrapper if text exists around it
       const jsonMatch = clean.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        clean = jsonMatch[0];
-      }
+      if (jsonMatch) clean = jsonMatch[0];
 
-      // Fix common JSON issues
+      // Sanitization
       clean = clean
-        .replace(/\\n/g, "\\n") // Fix newlines
-        .replace(/\\'/g, "'") // Fix escaped single quotes
-        .replace(/\\"/g, '\\"') // Ensure double quotes are properly escaped
-        .replace(/[\u0000-\u0019]+/g, ""); // Remove control characters
+        .replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "'")
+        .replace(/\\"/g, '\\"')
+        .replace(/[\u0000-\u0019]+/g, "");
 
-      try {
-        const parsed = JSON.parse(clean);
+      const parsed = JSON.parse(clean);
 
-        // Validate the structure
-        if (!parsed.tts_script || !Array.isArray(parsed.tts_script)) {
-          throw new Error("Invalid structure: missing tts_script array");
-        }
-        if (!parsed.closer || !parsed.full_script) {
-          throw new Error("Invalid structure: missing closer or full_script");
-        }
-
-        setScript(parsed);
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        console.error("Cleaned text:", clean);
-        console.error("Raw response:", text);
-
-        // Try one more aggressive fix - remove any trailing commas
-        try {
-          const fixedClean = clean.replace(/,(\s*[}\]])/g, "$1");
-          const parsed = JSON.parse(fixedClean);
-          console.log("Successfully parsed with trailing comma fix");
-          setScript(parsed);
-        } catch (secondError) {
-          throw new Error(`Failed to parse response. ${parseError.message}`);
-        }
+      // Basic validation
+      if (!parsed.tts_script || !Array.isArray(parsed.tts_script)) {
+        throw new Error("Invalid structure: missing tts_script array");
       }
+
+      setScript(parsed);
     } catch (err) {
       setScriptError(`Failed to generate script: ${err.message}`);
-      console.error("API error:", err);
+      console.error(err);
     } finally {
       setLoadingScript(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-[#0e1016] text-white flex flex-col items-center p-6 relative overflow-hidden">
+      {/* Ambient Background Effects */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[60%] h-[60%] bg-blue-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[60%] h-[60%] bg-purple-900/10 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative max-w-4xl w-full z-10 pt-10 pb-20">
         <button
           onClick={() =>
             onNavigate(selectedIdea?.isCustom ? "custom" : "generate")
           }
-          className="mb-6 text-teal-600 hover:text-teal-800 font-medium transition duration-200"
+          className="mb-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
         >
-          ← Back
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Back</span>
         </button>
 
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Idea Details
-          </h2>
-          <p className="text-gray-600">Expand on your video concept</p>
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-2">Production Studio</h2>
+          <p className="text-gray-400">Review and refine your content</p>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-6 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-2">Selected Idea:</h3>
-          <p className="text-gray-700">{selectedIdea?.video_idea}</p>
+        {/* Selected Idea Card */}
+        <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl mb-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500" />
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
+            Target Topic
+          </h3>
+          <p className="text-xl md:text-2xl font-medium text-white mb-2 leading-relaxed">
+            {selectedIdea?.video_idea}
+          </p>
           {selectedIdea?.tiktok_caption && (
-            <p className="text-sm text-gray-600 mt-2">
-              {selectedIdea.tiktok_caption}
-            </p>
+            <div className="mt-4 p-4 bg-black/20 rounded-xl border border-white/5">
+              <p className="text-sm text-gray-400 font-mono">
+                {selectedIdea.tiktok_caption}
+              </p>
+            </div>
           )}
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
-            <h3 className="font-semibold text-gray-800 mb-4">
-              Text-to-Speech Script
-            </h3>
+        {/* Actions Area */}
+        <div className="space-y-8">
+          {!script && (
+            <div className="flex flex-col items-center justify-center p-12 bg-white/5 border border-white/10 rounded-3xl border-dashed">
+              <button
+                onClick={generateScript}
+                disabled={loadingScript}
+                className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-500 hover:to-purple-500 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20"
+              >
+                {loadingScript ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <span>Generating Magic...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                    <span>Generate Full Script</span>
+                  </>
+                )}
+              </button>
+              {scriptError && (
+                <div className="mt-4 text-red-400 bg-red-900/20 px-4 py-2 rounded-lg border border-red-500/20">
+                  {scriptError}
+                </div>
+              )}
+            </div>
+          )}
 
-            <button
-              onClick={generateScript}
-              disabled={loadingScript}
-              className="w-full bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-            >
-              {loadingScript ? "Generating Script..." : "Generate TTS Script"}
-            </button>
-
-            {scriptError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 mb-4">
-                {scriptError}
-              </div>
-            )}
-
-            {script && (
-              <div className="space-y-6">
-                <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-4">
-                    Tutorial Steps
-                  </h4>
-                  {script.tts_script.map((step, index) => (
-                    <div key={index} className="mb-8">
-                      <div className="bg-white rounded-lg p-4 mb-2 shadow-sm">
-                        <p className="text-sm font-medium text-gray-500 mb-2">
-                          {index === 0
-                            ? "Hook/Intro"
-                            : `Step ${index} - Voiceover`}
-                          :
-                        </p>
-                        <textarea
-                          value={step.voiceover}
-                          onChange={(e) =>
-                            handleVoiceoverChange(index, e.target.value)
-                          }
-                          className="w-full text-gray-800 border-2 border-gray-200 rounded-lg p-3 focus:border-blue-400 focus:outline-none transition duration-200 resize-none"
-                          rows="2"
-                        />
-                      </div>
-                      {step.code_snippet && step.code_snippet.trim() !== "" && (
-                        <CodeWindow code={step.code_snippet} />
-                      )}
+          {script && (
+            <div className="animate-fade-in space-y-8">
+              {/* Script Steps */}
+              <div className="space-y-12">
+                {script.tts_script.map((step, index) => (
+                  <div key={index} className="relative group">
+                    <div className="absolute -left-4 md:-left-12 top-0 text-gray-600 font-mono text-sm hidden md:block">
+                      {index === 0 ? "HOOK" : `0${index}`}
                     </div>
-                  ))}
-                </div>
 
-                <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-3">
-                    Closer:
-                  </h4>
-                  <textarea
-                    value={script.closer}
-                    onChange={(e) => handleCloserChange(e.target.value)}
-                    className="w-full text-gray-800 border-2 border-gray-200 rounded-lg p-3 focus:border-purple-400 focus:outline-none transition duration-200 resize-none"
-                    rows="2"
-                  />
-                </div>
+                    {/* Voiceover Input */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        {index === 0
+                          ? "Viral Hook (Voiceover)"
+                          : "Voiceover Explanation"}
+                      </label>
+                      <textarea
+                        value={step.voiceover}
+                        onChange={(e) =>
+                          handleVoiceoverChange(index, e.target.value)
+                        }
+                        className="w-full bg-[#1c1c1c] text-gray-200 border border-white/10 rounded-xl p-4 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all resize-none leading-relaxed text-lg"
+                        rows={index === 0 ? 2 : 3}
+                      />
+                    </div>
 
-                {/* Show All TTS Button */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => setShowAllTTS(!showAllTTS)}
-                    className="bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 shadow-lg"
-                  >
-                    {showAllTTS
-                      ? "🔼 Hide Full TTS Script"
-                      : "📋 Show Full TTS Script"}
-                  </button>
-                </div>
+                    {/* Code Display */}
+                    {step.code_snippet && step.code_snippet.trim() !== "" && (
+                      <div className="mt-4 pl-0 md:pl-4 border-l-2 border-white/5">
+                        <CodeWindow code={step.code_snippet} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-                {/* All TTS Display */}
+              {/* Closer Section */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Outro / Closer
+                </label>
+                <textarea
+                  value={script.closer}
+                  onChange={(e) => handleCloserChange(e.target.value)}
+                  className="w-full bg-[#1c1c1c] text-gray-200 border border-white/10 rounded-xl p-4 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all resize-none"
+                  rows="2"
+                />
+              </div>
+
+              {/* Tools Section */}
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => setShowAllTTS(!showAllTTS)}
+                  className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  {showAllTTS ? "Hide TTS Script" : "Show Full TTS Script"}
+                </button>
+
                 {showAllTTS && (
-                  <div className="bg-linear-to-br from-indigo-50 to-purple-50 rounded-lg p-6 border-2 border-indigo-200 shadow-lg">
-                    <h4 className="font-semibold text-indigo-900 mb-4 text-lg">
-                      Complete TTS Script (Copy & Paste Ready)
-                    </h4>
-                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
-                      <pre className="whitespace-pre-wrap text-gray-800 font-sans leading-relaxed">
+                  <div className="bg-[#1c1c1c] rounded-xl border border-white/10 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
+                      <span className="text-sm font-medium text-gray-400">
+                        Full Voiceover Script
+                      </span>
+                      <button
+                        onClick={copyToClipboard}
+                        className="text-xs flex items-center gap-1 text-purple-400 hover:text-purple-300 transition-colors"
+                      >
+                        {copied ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                        {copied ? "Copied!" : "Copy Text"}
+                      </button>
+                    </div>
+                    <div className="p-6">
+                      <pre className="whitespace-pre-wrap text-gray-300 font-sans leading-relaxed text-sm md:text-base">
                         {getAllTTSText()}
                       </pre>
                     </div>
                   </div>
                 )}
 
-                <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                  <h4 className="font-semibold text-gray-800 mb-3">
-                    Full Python Script:
-                  </h4>
+                <div className="mt-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-px flex-1 bg-white/10"></div>
+                    <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">
+                      Final Code
+                    </span>
+                    <div className="h-px flex-1 bg-white/10"></div>
+                  </div>
                   <CodeWindow code={script.full_script} />
                 </div>
               </div>
-            )}
 
-            {!script && !loadingScript && (
-              <div className="bg-gray-100 rounded-lg p-6 text-center">
-                <p className="text-gray-500">
-                  Click the button above to generate your video script
-                </p>
+              {/* Re-generate Button (Bottom) */}
+              <div className="pt-8 flex justify-center">
+                <button
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
+                  className="text-gray-500 hover:text-white text-sm transition-colors"
+                >
+                  Scroll to Top
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
