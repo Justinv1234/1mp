@@ -1,6 +1,14 @@
 // src/pages/IdeaDetailsPage.jsx
 import { useState } from "react";
-import { ArrowLeft, Sparkles, Loader2, Copy, Check, Play } from "lucide-react";
+import {
+  ArrowLeft,
+  Sparkles,
+  Loader2,
+  Copy,
+  Check,
+  Play,
+  RefreshCw,
+} from "lucide-react";
 import CodeWindow from "../components/CodeWindow";
 
 export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
@@ -9,6 +17,9 @@ export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
   const [scriptError, setScriptError] = useState("");
   const [showAllTTS, setShowAllTTS] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // New state for regeneration instructions
+  const [refinementText, setRefinementText] = useState("");
 
   const handleVoiceoverChange = (index, newValue) => {
     const updatedScript = { ...script };
@@ -32,14 +43,23 @@ export default function IdeaDetailsPage({ onNavigate, selectedIdea }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const generateScript = async () => {
+  // Modified to accept an optional boolean to indicate if this is a regeneration
+  const generateScript = async (isRegenerating = false) => {
     setLoadingScript(true);
     setScriptError("");
     setScript(null);
 
-    // ... (Keep existing prompt logic exactly as it was) ...
+    // If regenerating, use the text from the input box. Otherwise empty.
+    const customInstructions = isRegenerating ? refinementText : "";
+
     const prompt = `You are an expert content creator for TikTok-style Python tutorials in the style of "1-Minute Python".  
 You are given a single **video idea/topic**: "${selectedIdea?.video_idea}"
+
+${
+  customInstructions
+    ? `\n*** IMPORTANT USER REFINEMENT INSTRUCTIONS ***\nThe user wants you to generate the script with these specific changes:\n"${customInstructions}"\nEnsure these instructions take precedence over default length/style constraints if they conflict.\n******************************************\n`
+    : ""
+}
 
 Generate a **step-by-step Python tutorial script** optimized for **TikTok virality** and **direct use in text-to-speech (ElevenLabs)**.
 
@@ -143,6 +163,8 @@ Output **JSON only**, no extra text.`;
       }
 
       setScript(parsed);
+      // Clear the refinement text after successful generation if you want,
+      // or keep it so user can tweak it. I'll keep it for now.
     } catch (err) {
       setScriptError(`Failed to generate script: ${err.message}`);
       console.error(err);
@@ -199,7 +221,7 @@ Output **JSON only**, no extra text.`;
           {!script && (
             <div className="flex flex-col items-center justify-center p-12 bg-white/5 border border-white/10 rounded-3xl border-dashed">
               <button
-                onClick={generateScript}
+                onClick={() => generateScript(false)}
                 disabled={loadingScript}
                 className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-linear-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-500 hover:to-purple-500 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20"
               >
@@ -321,7 +343,51 @@ Output **JSON only**, no extra text.`;
                 </div>
               </div>
 
-              {/* Re-generate Button (Bottom) */}
+              {/* Refine & Regenerate Section */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mt-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <RefreshCw className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">
+                    Refine & Regenerate
+                  </h3>
+                </div>
+
+                <p className="text-sm text-gray-400 mb-4">
+                  Not happy with the result? Add suggestions below and AI will
+                  rewrite the script.
+                </p>
+
+                <div className="flex flex-col gap-4">
+                  <textarea
+                    value={refinementText}
+                    onChange={(e) => setRefinementText(e.target.value)}
+                    placeholder="e.g. Make the hook more aggressive, add more comments to the code, or make the explanation simpler..."
+                    className="w-full bg-[#141414] text-white border border-white/10 rounded-xl p-4 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all resize-none"
+                    rows="3"
+                  />
+                  <button
+                    onClick={() => generateScript(true)}
+                    disabled={loadingScript}
+                    className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl transition-all border border-white/10 hover:border-white/20 flex items-center justify-center gap-2"
+                  >
+                    {loadingScript ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Regenerating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Regenerate Script</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Scroll to Top */}
               <div className="pt-8 flex justify-center">
                 <button
                   onClick={() =>
