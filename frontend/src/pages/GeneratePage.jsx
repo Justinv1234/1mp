@@ -4,6 +4,7 @@ import { Sparkles, ArrowLeft, Loader2, History, Trash2 } from "lucide-react";
 
 export default function GeneratePage({ onNavigate, onSelectIdea }) {
   const [numIdeas, setNumIdeas] = useState(10);
+  const [customDetails, setCustomDetails] = useState(""); // New state for optional details
   const [ideas, setIdeas] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,13 @@ export default function GeneratePage({ onNavigate, onSelectIdea }) {
       .map((h) => h.video_idea)
       .join(", ");
 
+    // Inject custom details if they exist
+    const focusSection = customDetails.trim()
+      ? `\n*** IMPORTANT USER FOCUS ***\nThe user wants video ideas specifically about: "${customDetails}"\nEnsure the generated ideas strictly follow this theme/requirement while maintaining the channel's style.\n**************************\n`
+      : "";
+
     const prompt = `You are an expert short-form content creator for a programming channel called "1MinutePython".
+${focusSection}
 Your job is to generate ${numIdeas} Python video ideas that feel:
 - Slightly dangerous (but ethical)
 - Curiosity-inducing
@@ -162,6 +169,20 @@ Now generate ${numIdeas} UNIQUE video ideas.`;
           </div>
 
           <div className="space-y-6">
+            {/* New Input Field for Specific Details */}
+            <div>
+              <label className="block text-gray-400 text-sm font-medium mb-3 ml-1">
+                Specific Focus / Details (Optional)
+              </label>
+              <textarea
+                value={customDetails}
+                onChange={(e) => setCustomDetails(e.target.value)}
+                className="w-full bg-[#0e1016] border border-white/10 rounded-xl p-4 text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all placeholder-gray-600 resize-none"
+                placeholder="e.g. use APIs, make it about wifi, automation tricks..."
+                rows="2"
+              />
+            </div>
+
             <div>
               <label className="block text-gray-400 text-sm font-medium mb-3 ml-1">
                 Number of Ideas to Generate
